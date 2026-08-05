@@ -13,18 +13,18 @@ COPY src ./src
 
 RUN npm run build
 
-# Serve with nginx (proxies /api and /health to Backend Cloud Run)
+# Serve with nginx; entrypoint writes runtime-config.js from BACKEND_URL
 FROM nginx:1.27-alpine AS runtime
 
-# Cloud Run provides PORT (default 8080). nginx image envsubst uses
-# /etc/nginx/templates/*.template → /etc/nginx/conf.d/
 ENV PORT=8080
-ENV BACKEND_URL=http://127.0.0.1:3001
+ENV BACKEND_URL=
 
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
+COPY docker-entrypoint.sh /cvagent-entrypoint.sh
+RUN chmod +x /cvagent-entrypoint.sh
+
 COPY --from=build /app/dist /usr/share/nginx/html
 
 EXPOSE 8080
 
-# Official nginx image entrypoint runs envsubst on templates, then starts nginx
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["/cvagent-entrypoint.sh"]

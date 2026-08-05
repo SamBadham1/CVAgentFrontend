@@ -1,4 +1,5 @@
 import type { ChatEvent } from "./types";
+import { apiUrl } from "./apiBase";
 
 function parseSseBlock(block: string): ChatEvent | null {
   let event = "message";
@@ -65,7 +66,7 @@ export async function* streamChat(
   conversationId?: string,
   signal?: AbortSignal,
 ): AsyncGenerator<ChatEvent> {
-  const res = await fetch("/api/chat", {
+  const res = await fetch(apiUrl("/api/chat"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -94,7 +95,7 @@ export async function checkHealth(): Promise<{
   version?: string;
 }> {
   try {
-    const res = await fetch("/health");
+    const res = await fetch(apiUrl("/health"));
     if (!res.ok) return { ok: false };
     const json = (await res.json()) as { version?: string };
     return { ok: true, version: json.version };
